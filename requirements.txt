@@ -1,0 +1,5 @@
+tensorflow==2.13.0  # Adjust version based on the TensorFlow version you used
+pandas==1.5.3  # Ensure compatibility with your model preprocessing
+numpy==1.24.3  # Required by TensorFlow and for array manipulations
+scikit-learn==1.2.2  # For MinMaxScaler and LabelEncoder
+azure-functions==1.14.0  # Required for Azure Functions

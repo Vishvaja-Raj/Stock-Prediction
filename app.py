@@ -1,11 +1,13 @@
-import json
+from flask import Flask, request, jsonify
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler, LabelEncoder
 from tensorflow.keras.models import load_model
-import logging
 
-# Load files and initialize model on function startup
+# Initialize Flask app
+app = Flask(__name__)
+
+# Load necessary files and model on startup
 stock_risk_data = pd.read_csv("stock_risk_levels.csv")
 model = load_model("risk_prediction_model.h5")
 
@@ -24,18 +26,18 @@ DEFAULT_DEBT = 1000
 DEFAULT_INVESTMENT_GOALS = "Growth"
 DEFAULT_SPENDING_HABITS = "Moderate"
 
-# Azure Function handler
-def main(req):
-    logging.info("Received request for stock recommendations.")
+@app.route('/')
+def home():
+    return "Hi there!"
+
+@app.route('/recommend', methods=['POST'])
+def recommend_stocks():
     try:
-        # Parse income from request
-        req_body = req.get_json()
-        income = req_body.get("income")
+        # Parse income from request body
+        data = request.get_json()
+        income = data.get("income")
         if income is None:
-            return {
-                "statusCode": 400,
-                "body": json.dumps({"error": "Income value is required"})
-            }
+            return jsonify({"error": "Income value is required"}), 400
         
         # Create input data
         input_data = pd.DataFrame([{
@@ -63,15 +65,12 @@ def main(req):
         eligible_stocks = stock_risk_data[stock_risk_data["Risk Level"] == predicted_risk_level]
         recommendations = eligible_stocks.sample(n=min(5, len(eligible_stocks)))
         
-        # Format response
+        # Format and return response
         response = recommendations[["Stock Name", "Risk Level"]].to_dict(orient="records")
-        return {
-            "statusCode": 200,
-            "body": json.dumps({"recommendations": response})
-        }
+        return jsonify({"recommendations": response}), 200
+
     except Exception as e:
-        logging.error(f"Error processing request: {e}")
-        return {
-            "statusCode": 500,
-            "body": json.dumps({"error": str(e)})
-        }
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)

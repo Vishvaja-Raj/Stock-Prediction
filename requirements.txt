@@ -3,3 +3,4 @@ pandas # Ensure compatibility with your model preprocessing
 numpy  # Required by TensorFlow and for array manipulations
 scikit-learn # For MinMaxScaler and LabelEncoder
 azure-functions  # Required for Azure Functions
+flask
